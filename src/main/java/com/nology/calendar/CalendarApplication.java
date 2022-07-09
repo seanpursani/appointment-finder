@@ -26,9 +26,9 @@ public class CalendarApplication {
 		ruthCalendar.createAppointment("Performance Review", AppointmentLength.FIFTEEN, LocalTime.of(13, 0));
 		ruthCalendar.createAppointment("Monthly team meeting", AppointmentLength.SIXTY, LocalTime.of(15, 0));
 		ruthCalendar.createAppointment("Marketing Debrief", AppointmentLength.THIRTY, LocalTime.of(18, 0));
-		//System.out.println(seanCalendar.showAppointmentList());
+		System.out.println(seanCalendar.showAppointmentList());
 		System.out.println(ruthCalendar.showAppointmentList());
-		System.out.println(Sean.compareCalendar(Ruth, AppointmentLength.SIXTY, 15));
+		System.out.println(Sean.compareCalendar(Ruth, AppointmentLength.SIXTY, 60));
 
 
 	}
