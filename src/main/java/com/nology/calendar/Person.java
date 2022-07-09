@@ -38,17 +38,17 @@ public class Person {
                 ? getCalendar().getLatestAvailableTime()
                 : coworker.getCalendar().getLatestAvailableTime());
 
-        allAvailableSlots.addAll(availableSlot(getCalendar(), earliestBoundary, latestBoundary, getCalendar().getIntFromEnum(appointmentLength), interval));
-        allAvailableSlots.addAll(availableSlot(coworker.getCalendar(), earliestBoundary, latestBoundary, getCalendar().getIntFromEnum(appointmentLength), interval));
+        allAvailableSlots.addAll(checkAvailableSlots(getCalendar(), earliestBoundary, latestBoundary, getCalendar().getIntFromEnum(appointmentLength), interval));
+        allAvailableSlots.addAll(checkAvailableSlots(coworker.getCalendar(), earliestBoundary, latestBoundary, getCalendar().getIntFromEnum(appointmentLength), interval));
 
         for (Appointment appointment : allAvailableSlots) {
             if (!sharedTimeSlots.add(appointment)) { meetingTimes.append(appointment).append("\n"); } }
         return (meetingTimes.toString().length() > 0)
-                ? "Yay! Here are times when everyone is available: \n" + meetingTimes.toString()
-                : "Sorry, no appointments can be made.";
+                ? "Yay! Here are the slots when everyone is available: \n" + meetingTimes.toString()
+                : "Sorry! No appointments can be made.";
     }
 
-    private List<Appointment> availableSlot(Calendar calendar, LocalTime earliestBoundary, LocalTime latestBoundary, long length, int interval) {
+    private List<Appointment> checkAvailableSlots(Calendar calendar, LocalTime earliestBoundary, LocalTime latestBoundary, long length, int interval) {
         List<Appointment> userAvailableSlots = new ArrayList<>();
         LocalTime tempEarliestBoundary = earliestBoundary;
         LocalTime tempLatestBoundary;
@@ -66,8 +66,7 @@ public class Person {
             } else if (!isEarliestBoundaryBeforeUsers && i > 0 && i < userAppointments.size()-1) {
                 tempEarliestBoundary = userAppointments.get(i).getEndTime();
                 tempLatestBoundary = userAppointments.get(i+1).getStartTime();
-            }
-            else {
+            } else {
                 tempEarliestBoundary = userAppointments.get(i-count).getEndTime();
                 tempLatestBoundary = (isEarliestBoundaryBeforeUsers && i == userAppointments.size() - count)
                         ? userAppointments.get(i).getStartTime()
@@ -103,7 +102,7 @@ public class Person {
 
     @Override
     public String toString() {
-        return "Name= " + name + "\n" + calendar + "Coworkers= " + showContacts();
+        return "Name= " + name + "\n" + calendar + "Co-workers= " + showContacts();
     }
 
 
