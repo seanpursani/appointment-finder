@@ -28,9 +28,7 @@ public class CalendarApplication {
 		ruthCalendar.createAppointment("Marketing Debrief", AppointmentLength.THIRTY, LocalTime.of(18, 0));
 		System.out.println(seanCalendar.showAppointmentList());
 		System.out.println(ruthCalendar.showAppointmentList());
-		System.out.println(Sean.compareCalendar(Ruth, AppointmentLength.SIXTY, 60));
-
-
+		System.out.println(Sean.compareCalendar(Ruth, AppointmentLength.FIFTEEN, 60));
 	}
 
 }

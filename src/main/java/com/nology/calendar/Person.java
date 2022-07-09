@@ -15,7 +15,7 @@ public class Person {
 
     public Calendar setDailyBound(LocalTime earliestAvailableTime, LocalTime latestAvailableTime) {
         setCalendar(new Calendar(earliestAvailableTime, latestAvailableTime));
-        System.out.println("Hi " + getName() + "! Your calendar has been created with the bounds, " + earliestAvailableTime + "-" + latestAvailableTime);
+        System.out.println("Hi " + getName() + "! Your calendar has been created with your earliest and latest availability being, " + earliestAvailableTime + "-" + latestAvailableTime);
         return calendar;
     }
 
@@ -43,54 +43,43 @@ public class Person {
 
         for (Appointment appointment : allAvailableSlots) {
             if (!sharedTimeSlots.add(appointment)) { meetingTimes.append(appointment).append("\n"); } }
-//        System.out.println(allAvailableSlots.stream().sorted(Comparator.comparing(Appointment::getStartTime)).collect(Collectors.toList()));
-//        System.out.println(sharedTimeSlots.stream().sorted(Comparator.comparing(Appointment::getStartTime)).collect(Collectors.toList()));
         return (meetingTimes.toString().length() > 0)
                 ? "Yay! Here are times when everyone is available: \n" + meetingTimes.toString()
                 : "Sorry, no appointments can be made.";
     }
 
     private List<Appointment> availableSlot(Calendar calendar, LocalTime earliestBoundary, LocalTime latestBoundary, long length, int interval) {
-        List<Appointment> availableSlots = new ArrayList<>();
+        List<Appointment> userAvailableSlots = new ArrayList<>();
         LocalTime tempEarliestBoundary = earliestBoundary;
         LocalTime tempLatestBoundary;
         List<Appointment> userAppointments = calendar.getAppointmentList();
-//        System.out.println("Overall Boundary " + tempEarliestBoundary + ": " + latestBoundary);
-//        System.out.println(userAppointments);
-        boolean isEarly = !earliestBoundary.isAfter(userAppointments.get(0).getStartTime()) && !earliestBoundary.equals(userAppointments.get(0).getStartTime());
-        int count = isEarly ? 1 : 0;
+        boolean isEarliestBoundaryBeforeUsers = !earliestBoundary.isAfter(userAppointments.get(0).getStartTime()) && !earliestBoundary.equals(userAppointments.get(0).getStartTime());
+        int count = isEarliestBoundaryBeforeUsers ? 1 : 0;
         for (int i = 0; i < userAppointments.size() + count; i++) {
             if (i == 0 && (earliestBoundary.isAfter(userAppointments.get(i).getStartTime()) || earliestBoundary.equals(userAppointments.get(i).getStartTime()))) {
                 tempLatestBoundary = userAppointments.get(i+1).getStartTime();
-//                System.out.println("1 Earliest " + tempEarliestBoundary + " " + "Latest " + tempLatestBoundary);
             } else if (i == 0 && (earliestBoundary.isBefore(userAppointments.get(i).getStartTime()) || earliestBoundary.equals(userAppointments.get(i).getStartTime()))) {
                 tempLatestBoundary = userAppointments.get(i).getStartTime();
-//                System.out.println("2 Earliest " + tempEarliestBoundary + " " + "Latest " + tempLatestBoundary);
-            } else if (isEarly && i < userAppointments.size() - 1) {
+            } else if (isEarliestBoundaryBeforeUsers && i < userAppointments.size() - 1) {
                 tempEarliestBoundary = userAppointments.get(i-1).getEndTime();
                 tempLatestBoundary = userAppointments.get(i).getStartTime();
-//                System.out.println("3 Earliest " + tempEarliestBoundary + " " + "Latest " + tempLatestBoundary);
-            } else if (!isEarly && i > 0 && i < userAppointments.size()-1) {
+            } else if (!isEarliestBoundaryBeforeUsers && i > 0 && i < userAppointments.size()-1) {
                 tempEarliestBoundary = userAppointments.get(i).getEndTime();
                 tempLatestBoundary = userAppointments.get(i+1).getStartTime();
-//                System.out.println("4 Earliest " + tempEarliestBoundary + " " + "Latest " + tempLatestBoundary);
             }
             else {
                 tempEarliestBoundary = userAppointments.get(i-count).getEndTime();
-                tempLatestBoundary = (isEarly && i == userAppointments.size() - count)
+                tempLatestBoundary = (isEarliestBoundaryBeforeUsers && i == userAppointments.size() - count)
                         ? userAppointments.get(i).getStartTime()
                         : latestBoundary;
-//                System.out.println(tempLatestBoundary);
-//                System.out.println("5 Earliest " + tempEarliestBoundary + " " + "Latest " + tempLatestBoundary);
             }
             while (tempEarliestBoundary.plusMinutes(length).isBefore(tempLatestBoundary) || tempEarliestBoundary.plusMinutes(length).equals(tempLatestBoundary)) {
                 Appointment newAppointment = new Appointment(tempEarliestBoundary, tempEarliestBoundary.plusMinutes(length));
-                availableSlots.add(newAppointment);
+                userAvailableSlots.add(newAppointment);
                 tempEarliestBoundary = tempEarliestBoundary.plusMinutes(interval);
-//                System.out.println("New Appointment " + newAppointment);
             }
         }
-        return availableSlots;
+        return userAvailableSlots;
     }
 
     public String showContacts() {
