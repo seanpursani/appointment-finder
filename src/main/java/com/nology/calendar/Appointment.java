@@ -1,6 +1,7 @@
 package com.nology.calendar;
 
 import java.time.LocalTime;
+import java.util.Objects;
 
 public class Appointment {
     private final LocalTime startTime;
@@ -22,5 +23,18 @@ public class Appointment {
     @Override
     public String toString() {
         return  startTime + "-" + endTime;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Appointment that = (Appointment) o;
+        return Objects.equals(startTime, that.startTime) && Objects.equals(endTime, that.endTime);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(startTime, endTime);
     }
 }

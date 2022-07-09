@@ -21,6 +21,9 @@ public class Calendar {
 
     public String createAppointment (String meetingTitle, AppointmentLength appointmentLength, LocalTime startTime) {
         LocalTime endTime = startTime.plus(getIntFromEnum(appointmentLength), ChronoUnit.MINUTES);
+        if ((endTime.isBefore(earliestAvailableTime) || endTime.equals(earliestAvailableTime)) ||
+                (endTime.isAfter(latestAvailableTime)))
+            throw new RuntimeException("This appointment is outside of your working range");
         Appointment myAppointment = new Appointment(startTime, endTime);
         appointmentList.add(myAppointment);
         return myAppointment.toString();
@@ -38,7 +41,7 @@ public class Calendar {
 
     public String showAppointmentList() {
         List<Appointment> ascendingOrder = appointmentList.stream().sorted(Comparator.comparing(Appointment::getStartTime)).collect(Collectors.toList());
-        StringBuilder appointmentList = new StringBuilder();
+        StringBuilder appointmentList = new StringBuilder("Here are your appointments for today: \n");
         for (Appointment appointment : ascendingOrder) {
             appointmentList.append(appointment).append("\n");
         }
@@ -56,6 +59,7 @@ public class Calendar {
     public LocalTime getLatestAvailableTime() {
         return latestAvailableTime;
     }
+
 
     @Override
     public String toString() {
