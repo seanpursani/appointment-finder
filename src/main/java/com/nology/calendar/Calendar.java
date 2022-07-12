@@ -23,7 +23,7 @@ public class Calendar {
         LocalTime endTime = startTime.plus(getIntFromEnum(appointmentLength), ChronoUnit.MINUTES);
         if ((endTime.isBefore(earliestAvailableTime) || endTime.equals(earliestAvailableTime)) ||
                 (endTime.isAfter(latestAvailableTime)))
-            throw new RuntimeException("This appointment is outside of your working range");
+            throw new IllegalArgumentException("This appointment is outside of your working range, " + meetingTitle + " @ " + startTime);
         Appointment myAppointment = new Appointment(startTime, endTime);
         appointmentList.add(myAppointment);
         return myAppointment.toString();
