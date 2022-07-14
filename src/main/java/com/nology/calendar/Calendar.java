@@ -19,11 +19,11 @@ public class Calendar {
         this.latestAvailableTime = latestAvailableTime;
     }
 
-    public String createAppointment (String meetingTitle, AppointmentLength appointmentLength, LocalTime startTime) {
+    public String createAppointment (AppointmentLength appointmentLength, LocalTime startTime) {
         LocalTime endTime = startTime.plus(getIntFromEnum(appointmentLength), ChronoUnit.MINUTES);
         if ((endTime.isBefore(earliestAvailableTime) || endTime.equals(earliestAvailableTime)) ||
                 (endTime.isAfter(latestAvailableTime)))
-            throw new IllegalArgumentException("This appointment is outside of your working range, " + meetingTitle + " @ " + startTime);
+            throw new IllegalArgumentException("Appointment @ " + startTime + " is outside of your working range");
         Appointment myAppointment = new Appointment(startTime, endTime);
         appointmentList.add(myAppointment);
         return myAppointment.toString();

@@ -36,7 +36,7 @@ public class Person {
         List<String> contacts = coworkers.stream().map(Person::getName).collect(Collectors.toList());
         StringBuilder contactsList = new StringBuilder();
         for (String contact: contacts) { contactsList.append(contact).append(" "); }
-        return (contactsList.toString().length() == 0) ? "no contacts yet" : contactsList.toString();
+        return (contactsList.toString().length() == 0) ? "No contacts yet" : contactsList.toString();
     }
 
     public List<Person> getCoworkers() {
