@@ -19,14 +19,20 @@ public class Calendar {
         this.latestAvailableTime = latestAvailableTime;
     }
 
-    public String createAppointment (AppointmentLength appointmentLength, LocalTime startTime) {
+    public String createAppointment(AppointmentLength appointmentLength, LocalTime startTime) {
         LocalTime endTime = startTime.plus(getIntFromEnum(appointmentLength), ChronoUnit.MINUTES);
-        if ((endTime.isBefore(earliestAvailableTime) || endTime.equals(earliestAvailableTime)) ||
-                (endTime.isAfter(latestAvailableTime)))
+        if ((endTime.isBefore(earliestAvailableTime) || endTime.equals(earliestAvailableTime)) || (endTime.isAfter(latestAvailableTime)))
             throw new IllegalArgumentException("Appointment @ " + startTime + " is outside of your working range");
         Appointment myAppointment = new Appointment(startTime, endTime);
         appointmentList.add(myAppointment);
         return myAppointment.toString();
+    }
+
+    public String deleteAppointment(LocalTime startTime) {
+        if (getAppointmentList().stream().noneMatch(appointment -> appointment.getStartTime() == startTime))
+            throw new IllegalArgumentException("No such appointment in your calendar.");
+        appointmentList.removeIf(appointment -> appointment.getStartTime().equals(startTime));
+        return "Appointment starting at " + startTime + " has been deleted.";
     }
 
     public long getIntFromEnum(AppointmentLength appointmentLength) {
@@ -59,7 +65,6 @@ public class Calendar {
     public LocalTime getLatestAvailableTime() {
         return latestAvailableTime;
     }
-
 
     @Override
     public String toString() {

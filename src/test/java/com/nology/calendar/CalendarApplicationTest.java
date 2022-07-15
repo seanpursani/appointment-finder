@@ -81,6 +81,22 @@ class CalendarApplicationTest {
             assertEquals("Appointment @ 19:00 is outside of your working range", exception.getMessage());
         }
 
+        @Test
+        @DisplayName("DeleteAppointmentFromCalendar")
+        void deleteAppointmentFromCalendar() {
+            janeDoeCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(16, 0));
+            assertEquals(1, janeDoeCalendar.getAppointmentList().size());
+            janeDoeCalendar.deleteAppointment(LocalTime.of(16, 0));
+            assertEquals(0, janeDoeCalendar.getAppointmentList().size());
+        }
+
+        @Test
+        @DisplayName("DeletingAppointmentInvalidRequest")
+        void AppointmentDeletionInvalidException() {
+            Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                    janeDoeCalendar.deleteAppointment(LocalTime.of(19, 0)));
+            assertEquals("No such appointment in your calendar.", exception.getMessage());
+        }
     }
 
     @Nested
@@ -94,7 +110,7 @@ class CalendarApplicationTest {
 
         @Test
         @DisplayName("throwExceptionContactNotInListOfContacts")
-        void throwExceptionContactInvalid() {
+        void ContactInvalidException() {
             Exception exception = assertThrows(IllegalArgumentException.class, () ->
                     jeremySmith.compareCalendar(List.of(janeDoe), AppointmentLength.SIXTY, 60));
             assertEquals("Coworker not in your contact list", exception.getMessage());
@@ -102,7 +118,7 @@ class CalendarApplicationTest {
 
         @Test
         @DisplayName("throwExceptionIntervalLengthShorterThanMeeting")
-        void throwExceptionIntervalInvalid() {
+        void IntervalInvalidException() {
             jeremySmith.addContact(janeDoe);
             Exception exception = assertThrows(IllegalArgumentException.class, () ->
                     jeremySmith.compareCalendar(List.of(janeDoe), AppointmentLength.SIXTY, 0));

@@ -23,6 +23,11 @@ public class Person {
         coworkers.add(coworker);
         return "Successfully added " + coworker.getName() + " to your list of contacts";
     }
+    
+    public String removeContact(Person coworker) {
+        coworkers.remove(coworker);
+        return "Successfully removed " + coworker.getName() + " from your list of contacts";
+    }
 
     public String compareCalendar(List<Person> coworkersToCompareAgainst, AppointmentLength length, int interval) {
         for (Person coworker : coworkersToCompareAgainst) {

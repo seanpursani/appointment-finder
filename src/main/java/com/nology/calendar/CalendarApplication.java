@@ -33,14 +33,10 @@ public class CalendarApplication {
 		danielCalendar.createAppointment(AppointmentLength.FIFTEEN, LocalTime.of(18, 0));
 		danielCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(15, 0));
 		Calendar lanaCalendar = Lana.setDailyBound(LocalTime.of(12, 0), LocalTime.of(19, 0));
-		lanaCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(12, 0));
-		lanaCalendar.createAppointment(AppointmentLength.FIFTEEN, LocalTime.of(14, 0));
-		lanaCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(15, 0));
-		System.out.println(seanCalendar.showAppointmentList());
-		System.out.println(ruthCalendar.showAppointmentList());
-		System.out.println(danielCalendar.showAppointmentList());
-		System.out.println(lanaCalendar.showAppointmentList());
+		System.out.println(lanaCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(12, 0)));
+		System.out.println(lanaCalendar.createAppointment(AppointmentLength.FIFTEEN, LocalTime.of(14, 0)));
+		System.out.println(lanaCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(15, 0)));
+		System.out.println(lanaCalendar.deleteAppointment(LocalTime.of(15, 0)));
 		System.out.println(Sean.compareCalendar(List.of(Ruth, Daniel, Lana), AppointmentLength.FIFTEEN, 15));
 	}
-
 }
