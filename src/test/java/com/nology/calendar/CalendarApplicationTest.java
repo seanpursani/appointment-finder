@@ -3,6 +3,7 @@ package com.nology.calendar;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -16,13 +17,13 @@ class CalendarApplicationTest {
     @DisplayName("Person") 
     class PersonTestCases {
 
-        Person janeDoe = new Person("Jane Doe");
-        Person jeremySmith = new Person("Jeremy Smith");
+        private final Person janeDoe = new Person("Jane Doe");
+        private final Person jeremySmith = new Person("Jeremy Smith");
 
         @ParameterizedTest (name = "{0}")
         @DisplayName("instantiatePersonWithNameStoredAsProperty")
         @ValueSource(strings = {"Des", "Janet", "Ruth", "Sean"})
-        void ShouldInstantiatePersonWithNameStoredAsProperty (String expectedName) {
+        void instantiatePersonObjectWithNameStoredAsProperty (String expectedName) {
             Person person = new Person(expectedName);
             assertEquals(expectedName, person.getName());
         }
@@ -36,8 +37,8 @@ class CalendarApplicationTest {
         }
 
         @Test
-        @DisplayName("displayContactList")
-        void displayContactList() {
+        @DisplayName("displayPersonContactList")
+        void displayPersonContactList() {
             janeDoe.addContact(jeremySmith);
             assertEquals("Jeremy Smith ", janeDoe.showContacts());
             assertEquals("No contacts yet", jeremySmith.showContacts());
@@ -48,8 +49,8 @@ class CalendarApplicationTest {
     @DisplayName("Calendar")
     class CalendarTestCases {
 
-        Person janeDoe = new Person("Jane Doe");
-        Calendar janeDoeCalendar = janeDoe.setDailyBound(LocalTime.of(8, 0), LocalTime.of(18,0));
+        private final Person janeDoe = new Person("Jane Doe");
+        private final Calendar janeDoeCalendar = janeDoe.setDailyBound(LocalTime.of(8, 0), LocalTime.of(18,0));
 
         @Test
         @DisplayName("Testing properties of calendar object")
@@ -73,12 +74,52 @@ class CalendarApplicationTest {
         }
 
         @Test
-        @DisplayName("Meeting out of range exception")
+        @DisplayName("MeetingOutOfTimeRangeExceptionHandling")
         void meetingOutOfRangeException() {
             Exception exception = assertThrows(IllegalArgumentException.class, () ->
                     janeDoeCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(19, 0)));
             assertEquals("Appointment @ 19:00 is outside of your working range", exception.getMessage());
         }
+
+    }
+
+    @Nested
+    @DisplayName("CompareCalendarMethod")
+    class CompareCalendarTestCases {
+
+        private final Person janeDoe = new Person("Jane Doe");
+        private final Calendar janeDoeCalendar = janeDoe.setDailyBound(LocalTime.of(9, 0), LocalTime.of(12,0));
+        private final Person jeremySmith = new Person("Jeremy Smith");
+        private final Calendar jeremySmithCalendar = jeremySmith.setDailyBound(LocalTime.of(9, 0), LocalTime.of(12, 0));
+
+        @Test
+        @DisplayName("throwExceptionContactNotInListOfContacts")
+        void throwExceptionContactInvalid() {
+            Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                    jeremySmith.compareCalendar(List.of(janeDoe), AppointmentLength.SIXTY, 60));
+            assertEquals("Coworker not in your contact list", exception.getMessage());
+        }
+
+        @Test
+        @DisplayName("throwExceptionIntervalLengthShorterThanMeeting")
+        void throwExceptionIntervalInvalid() {
+            jeremySmith.addContact(janeDoe);
+            Exception exception = assertThrows(IllegalArgumentException.class, () ->
+                    jeremySmith.compareCalendar(List.of(janeDoe), AppointmentLength.SIXTY, 0));
+            assertEquals("The interval length cannot be shorter than the meeting length", exception.getMessage());
+        }
+
+        @Test
+        @DisplayName("CompareCalendarMethod")
+        void compareCalendarMethod() {
+            jeremySmith.addContact(janeDoe);
+            jeremySmithCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(10, 0));
+            janeDoeCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(11, 0));
+            assertEquals("Here are the time slots when everyone is available:" + "\n" + "09:00-10:00" + "\n", jeremySmith.compareCalendar(List.of(janeDoe), AppointmentLength.SIXTY, 60));
+        }
+
+
+
 
     }
     

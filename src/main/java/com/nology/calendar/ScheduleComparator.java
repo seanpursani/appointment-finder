@@ -19,9 +19,10 @@ public class ScheduleComparator {
     }
 
     public String compareSchedule() {
-        StringBuilder meetingTimes = new StringBuilder("Here are the time slots when everyone is available: \n");
+        StringBuilder meetingTimes = new StringBuilder("Here are the time slots when everyone is available:\n");
         List<LocalTime> timeBoundaries = getScheduleBoundaries();
-        List<Appointment> allAvailableSlots = new ArrayList<>(checkAvailableSlots(getCalendar(), timeBoundaries.get(0), timeBoundaries.get(1), getCalendar().getIntFromEnum(getLength()), getInterval()));
+        List<Appointment> allAvailableSlots = new ArrayList<>();
+        checkAvailableSlots(getCalendar(), timeBoundaries.get(0), timeBoundaries.get(1), getCalendar().getIntFromEnum(getLength()), getInterval());
         for (Person coworker: getCoworkers()) {
             allAvailableSlots.addAll(checkAvailableSlots(coworker.getCalendar(), timeBoundaries.get(0), timeBoundaries.get(1), getCalendar().getIntFromEnum(getLength()), getInterval()));
         }
@@ -48,7 +49,7 @@ public class ScheduleComparator {
         boolean isEarliestBoundaryBeforeUsers = userAppointments.get(0).getStartTime().isAfter(earliestBoundary);
         int count = (isEarliestBoundaryBeforeUsers) ? 1 : 0;
         for (int i = 0; i < userAppointments.size() + count; i++) {
-            if (i == 0 && userAppointments.size() == 1) {
+            if (i == 0 && userAppointments.size() == 1 && !isEarliestBoundaryBeforeUsers) {
                 tempEarliestBoundary = userAppointments.get(i).getEndTime();
             } else if (i == 0 && isEarliestBoundaryBeforeUsers && userAppointments.get(i).getStartTime().isAfter(tempEarliestBoundary)) {
                 tempLatestBoundary = userAppointments.get(i).getStartTime();
