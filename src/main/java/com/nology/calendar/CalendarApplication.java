@@ -38,5 +38,7 @@ public class CalendarApplication {
 		System.out.println(lanaCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(15, 0)));
 		System.out.println(lanaCalendar.deleteAppointment(LocalTime.of(15, 0)));
 		System.out.println(Sean.compareCalendar(List.of(Ruth, Daniel, Lana), AppointmentLength.FIFTEEN, 15));
+		System.out.println(Sean.removeContact(Daniel));
+		System.out.println(Sean);
 	}
 }

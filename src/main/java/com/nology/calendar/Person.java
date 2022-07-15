@@ -40,7 +40,7 @@ public class Person {
     public String showContacts() {
         List<String> contacts = coworkers.stream().map(Person::getName).collect(Collectors.toList());
         StringBuilder contactsList = new StringBuilder();
-        for (String contact: contacts) { contactsList.append(contact).append(" "); }
+        for (String contact: contacts) { contactsList.append(contact).append(", "); }
         return (contactsList.toString().length() == 0) ? "No contacts yet" : contactsList.toString();
     }
 
@@ -64,7 +64,6 @@ public class Person {
     public String toString() {
         return "Name= " + name + "\n" + calendar + "Co-workers= " + showContacts();
     }
-
 
 }
 
