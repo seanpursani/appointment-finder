@@ -1,5 +1,6 @@
 package com.nology.calendar;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,36 +19,33 @@ public class ScheduleComparator {
         this.interval = interval;
     }
 
-    public String compareSchedule() {
-        StringBuilder meetingTimes = new StringBuilder("Here are the time slots when everyone is available:\n");
-        List<LocalTime> timeBoundaries = getScheduleBoundaries();
+    public List<Appointment> compareSchedule(LocalDate date) {
         List<Appointment> allAvailableSlots = new ArrayList<>();
-        checkAvailableSlots(getCalendar(), timeBoundaries.get(0), timeBoundaries.get(1), getCalendar().getIntFromEnum(getLength()), getInterval());
+        checkAvailableSlots(getCalendar(), getLatestEarlyBoundary(), getEarliestLateBoundary(), getCalendar().getIntFromEnum(getLength()), getInterval(), date);
         for (Person coworker: getCoworkers()) {
-            allAvailableSlots.addAll(checkAvailableSlots(coworker.getCalendar(), timeBoundaries.get(0), timeBoundaries.get(1), getCalendar().getIntFromEnum(getLength()), getInterval()));
+            allAvailableSlots.addAll(checkAvailableSlots(coworker.getCalendar(), getLatestEarlyBoundary(), getEarliestLateBoundary(), getCalendar().getIntFromEnum(getLength()), getInterval(), date));
         }
         List<Appointment> sharedTimeSlots = allAvailableSlots.stream()
                 .filter(appointment -> Collections.frequency(allAvailableSlots, appointment) == getCoworkers().size()+1)
                 .distinct()
                 .sorted(Comparator.comparing(Appointment::getStartTime))
                 .collect(Collectors.toList());
-        if (sharedTimeSlots.size() < 1) return "Sorry no appointments can be made!";
-        for (Appointment appointment: sharedTimeSlots) {
-            meetingTimes.append(appointment).append("\n");
-        }
-        return meetingTimes.toString();
+        if (sharedTimeSlots.size() < 1) return List.of();
+        return sharedTimeSlots;
     }
 
-    private List<Appointment> checkAvailableSlots(Calendar calendar, LocalTime earliestBoundary, LocalTime latestBoundary, long length, int interval) {
-        if (interval < length) throw new IllegalArgumentException("The interval length cannot be shorter than the meeting length");
+    private List<Appointment> checkAvailableSlots(Calendar calendar, LocalTime earliestBoundary, LocalTime latestBoundary, long length, int interval, LocalDate date) {
+        if (interval < length) throw new IllegalArgumentException("Interval length cannot be shorter than meeting length");
         LocalTime tempEarliestBoundary = earliestBoundary;
         LocalTime tempLatestBoundary = latestBoundary;
         List<Appointment> userAppointments = calendar.getAppointmentList().stream()
-                .filter(appointment -> isInRange(appointment, earliestBoundary, latestBoundary))
+                .filter(appointment -> appointment.getDate().equals(date) && isAppointmentInRange(appointment, earliestBoundary, latestBoundary))
+                .sorted(Comparator.comparing(Appointment::getStartTime))
                 .collect(Collectors.toList());
         if ((userAppointments.size()) < 1) return List.of();
         boolean isEarliestBoundaryBeforeUsers = userAppointments.get(0).getStartTime().isAfter(earliestBoundary);
         int count = (isEarliestBoundaryBeforeUsers) ? 1 : 0;
+
         for (int i = 0; i < userAppointments.size() + count; i++) {
             if (i == 0 && userAppointments.size() == 1 && !isEarliestBoundaryBeforeUsers) {
                 tempEarliestBoundary = userAppointments.get(i).getEndTime();
@@ -67,7 +65,7 @@ public class ScheduleComparator {
                 tempLatestBoundary = userAppointments.get(i+1).getStartTime();
             }
             while (tempEarliestBoundary.plusMinutes(length).isBefore(tempLatestBoundary) || tempEarliestBoundary.plusMinutes(length).equals(tempLatestBoundary)) {
-                Appointment newAppointment = new Appointment(tempEarliestBoundary, tempEarliestBoundary.plusMinutes(length));
+                Appointment newAppointment = new Appointment(date, tempEarliestBoundary, tempEarliestBoundary.plusMinutes(length));
                 getUserAvailableSlots().add(newAppointment);
                 tempEarliestBoundary = tempEarliestBoundary.plusMinutes(interval);
             }
@@ -75,29 +73,31 @@ public class ScheduleComparator {
         return getUserAvailableSlots();
     }
 
-    private boolean isInRange(Appointment appointment, LocalTime earliestBoundary, LocalTime latestBoundary) {
+    private boolean isAppointmentInRange(Appointment appointment, LocalTime earliestBoundary, LocalTime latestBoundary) {
         boolean isValid = !appointment.getEndTime().isBefore(earliestBoundary);
         if (appointment.getStartTime().isBefore(earliestBoundary) && !appointment.getEndTime().isAfter(earliestBoundary)) isValid = false;
         if (appointment.getStartTime().isAfter(latestBoundary) || appointment.getStartTime().equals(latestBoundary)) isValid = false;
         return isValid;
     }
 
-    public List<LocalTime> getScheduleBoundaries() {
-        List<Person> sortedEarliestAvailableTimes = getCoworkers().stream()
-                .sorted(Comparator.comparing(coworker -> coworker.getCalendar().getEarliestAvailableTime()))
-                .collect(Collectors.toList());
-        Person coworkerWithLatestEarlyBoundary = sortedEarliestAvailableTimes.get(sortedEarliestAvailableTimes.size() - 1);
+    private LocalTime getEarliestLateBoundary() {
         List<Person> sortedLatestAvailableTimes = getCoworkers().stream()
                 .sorted(Comparator.comparing(coworker -> coworker.getCalendar().getLatestAvailableTime()))
                 .collect(Collectors.toList());
         Person coworkerWithEarliestLateBoundary = sortedLatestAvailableTimes.get(0);
-        LocalTime earliestBoundary = (getCalendar().getEarliestAvailableTime().isAfter(coworkerWithLatestEarlyBoundary.getCalendar().getEarliestAvailableTime())
-                ? getCalendar().getEarliestAvailableTime()
-                : coworkerWithLatestEarlyBoundary.getCalendar().getEarliestAvailableTime());
-        LocalTime latestBoundary = (getCalendar().getLatestAvailableTime().isBefore(coworkerWithEarliestLateBoundary.getCalendar().getLatestAvailableTime())
+        return (getCalendar().getLatestAvailableTime().isBefore(coworkerWithEarliestLateBoundary.getCalendar().getLatestAvailableTime())
                 ? getCalendar().getLatestAvailableTime()
                 : coworkerWithEarliestLateBoundary.getCalendar().getLatestAvailableTime());
-        return List.of(earliestBoundary, latestBoundary);
+    }
+
+    private LocalTime getLatestEarlyBoundary() {
+        List<Person> sortedEarliestAvailableTimes = getCoworkers().stream()
+                .sorted(Comparator.comparing(coworker -> coworker.getCalendar().getEarliestAvailableTime()))
+                .collect(Collectors.toList());
+        Person coworkerWithLatestEarlyBoundary = sortedEarliestAvailableTimes.get(sortedEarliestAvailableTimes.size() - 1);
+        return (getCalendar().getEarliestAvailableTime().isAfter(coworkerWithLatestEarlyBoundary.getCalendar().getEarliestAvailableTime())
+                ? getCalendar().getEarliestAvailableTime()
+                : coworkerWithLatestEarlyBoundary.getCalendar().getEarliestAvailableTime());
     }
 
     public List<Appointment> getUserAvailableSlots() {

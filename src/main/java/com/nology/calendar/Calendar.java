@@ -1,12 +1,10 @@
 package com.nology.calendar;
 
-import org.springframework.cglib.core.Local;
-
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Calendar {
@@ -19,20 +17,21 @@ public class Calendar {
         this.latestAvailableTime = latestAvailableTime;
     }
 
-    public String createAppointment(AppointmentLength appointmentLength, LocalTime startTime) {
-        LocalTime endTime = startTime.plus(getIntFromEnum(appointmentLength), ChronoUnit.MINUTES);
+    public String createAppointment(AppointmentLength appointmentLength, LocalDateTime time) {
+        LocalTime endTime = time.toLocalTime().plus(getIntFromEnum(appointmentLength), ChronoUnit.MINUTES);
         if ((endTime.isBefore(earliestAvailableTime) || endTime.equals(earliestAvailableTime)) || (endTime.isAfter(latestAvailableTime)))
-            throw new IllegalArgumentException("Appointment @ " + startTime + " is outside of your working range");
-        Appointment myAppointment = new Appointment(startTime, endTime);
+            throw new IllegalArgumentException("Appointment @ " + time.toLocalTime() + " is outside of your working range");
+        if (time.isBefore(LocalDateTime.now()))
+            throw new IllegalArgumentException(("Appointment cannot be made in the past"));
+        Appointment myAppointment = new Appointment(time.toLocalDate(), time.toLocalTime(), endTime);
         appointmentList.add(myAppointment);
-        return myAppointment.toString();
+        return "Appointment on " + DateTimeFormatter.ofPattern("dd-MM-yyyy @ HH:mm").format(time) + " created.";
     }
 
-    public String deleteAppointment(LocalTime startTime) {
-        if (getAppointmentList().stream().noneMatch(appointment -> appointment.getStartTime() == startTime))
+    public void deleteAppointment(LocalDateTime time) {
+        if (getAppointmentList().stream().noneMatch(appointment -> appointment.getDate().equals(time.toLocalDate()) && appointment.getStartTime().equals(time.toLocalTime())))
             throw new IllegalArgumentException("No such appointment in your calendar.");
-        appointmentList.removeIf(appointment -> appointment.getStartTime().equals(startTime));
-        return "Appointment starting at " + startTime + " has been deleted.";
+        appointmentList.removeIf(appointment -> appointment.getDate().equals(time.toLocalDate()) && appointment.getStartTime().equals(time.toLocalTime()));
     }
 
     public long getIntFromEnum(AppointmentLength appointmentLength) {
@@ -45,17 +44,10 @@ public class Calendar {
         }
     }
 
-    public String showAppointmentList() {
-        List<Appointment> ascendingOrder = appointmentList.stream().sorted(Comparator.comparing(Appointment::getStartTime)).collect(Collectors.toList());
-        StringBuilder appointmentList = new StringBuilder("Here are your appointments for today: \n");
-        for (Appointment appointment : ascendingOrder) {
-            appointmentList.append(appointment).append("\n");
-        }
-        return appointmentList.toString();
-    }
-
     public List<Appointment> getAppointmentList() {
-        return appointmentList.stream().sorted(Comparator.comparing(Appointment::getStartTime)).collect(Collectors.toList());
+        return appointmentList.stream()
+                .sorted(Comparator.comparing(Appointment::getDate).thenComparing(Appointment::getStartTime))
+                .collect(Collectors.toList());
     }
 
     public LocalTime getEarliestAvailableTime() {
@@ -68,7 +60,10 @@ public class Calendar {
 
     @Override
     public String toString() {
-        return  "Available from " + earliestAvailableTime + " to " + latestAvailableTime + "\n" +
-                showAppointmentList();
+        return "Calendar{" +
+                "earliestAvailableTime=" + earliestAvailableTime +
+                ", latestAvailableTime=" + latestAvailableTime +
+                ", appointmentList=" + getAppointmentList() +
+                '}';
     }
 }

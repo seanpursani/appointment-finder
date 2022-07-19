@@ -4,7 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cglib.core.Local;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Month;
 import java.util.List;
 
 @SpringBootApplication
@@ -14,31 +17,22 @@ public class CalendarApplication {
 		SpringApplication.run(CalendarApplication.class, args);
 		Person Sean = new Person("Sean Pursani");
 		Person Ruth = new Person("Ruth Campbell");
-		Person Daniel = new Person("Daniel Han");
-		Person Lana = new Person("Lana Ferrari");
 		Sean.addContact(Ruth);
-		Sean.addContact(Daniel);
-		Sean.addContact(Lana);
-		Calendar seanCalendar = Sean.setDailyBound(LocalTime.of(8, 0), LocalTime.of(19, 30));
-		seanCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(9, 0));
-		seanCalendar.createAppointment(AppointmentLength.THIRTY, LocalTime.of(9, 30));
-		seanCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(13, 0));
-		seanCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(17, 30));
-		Calendar ruthCalendar = Ruth.setDailyBound(LocalTime.of(9, 0), LocalTime.of(19, 30));
-		ruthCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(13, 30));
-		ruthCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(15, 0));
-		ruthCalendar.createAppointment(AppointmentLength.THIRTY, LocalTime.of(17, 0));
-		Calendar danielCalendar = Daniel.setDailyBound(LocalTime.of(9, 0), LocalTime.of(19, 0));
-		danielCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(12, 0));
-		danielCalendar.createAppointment(AppointmentLength.FIFTEEN, LocalTime.of(18, 0));
-		danielCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(15, 0));
-		Calendar lanaCalendar = Lana.setDailyBound(LocalTime.of(12, 0), LocalTime.of(19, 0));
-		System.out.println(lanaCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(12, 0)));
-		System.out.println(lanaCalendar.createAppointment(AppointmentLength.FIFTEEN, LocalTime.of(14, 0)));
-		System.out.println(lanaCalendar.createAppointment(AppointmentLength.SIXTY, LocalTime.of(15, 0)));
-		System.out.println(lanaCalendar.deleteAppointment(LocalTime.of(15, 0)));
-		System.out.println(Sean.compareCalendar(List.of(Ruth, Daniel, Lana), AppointmentLength.FIFTEEN, 15));
-		System.out.println(Sean.removeContact(Daniel));
-		System.out.println(Sean);
+		Calendar seanCalendar = Sean.createCalendar(LocalTime.of(8, 0), LocalTime.of(16, 00));
+		seanCalendar.createAppointment(AppointmentLength.THIRTY, LocalDateTime.of(2023, Month.AUGUST, 10, 9, 30));
+		seanCalendar.createAppointment(AppointmentLength.SIXTY, LocalDateTime.of(2023, Month.AUGUST, 10, 10, 30));
+		seanCalendar.createAppointment(AppointmentLength.THIRTY, LocalDateTime.of(2023, Month.AUGUST, 10, 12, 0));
+		seanCalendar.createAppointment(AppointmentLength.THIRTY, LocalDateTime.of(2023, Month.AUGUST, 1, 12, 0));
+		seanCalendar.createAppointment(AppointmentLength.SIXTY, LocalDateTime.of(2023, Month.AUGUST, 12, 11, 0));
+		System.out.println(seanCalendar.getAppointmentList());
+		Calendar ruthCalendar = Ruth.createCalendar(LocalTime.of(9, 0), LocalTime.of(18, 00));
+		ruthCalendar.createAppointment(AppointmentLength.FIFTEEN, LocalDateTime.of(2023, Month.AUGUST, 10, 10, 0));
+		ruthCalendar.createAppointment(AppointmentLength.SIXTY, LocalDateTime.of(2023, Month.AUGUST, 10, 11, 0));
+		ruthCalendar.createAppointment(AppointmentLength.THIRTY, LocalDateTime.of(2023, Month.AUGUST, 10, 13, 0));
+		ruthCalendar.createAppointment(AppointmentLength.FIFTEEN, LocalDateTime.of(2023, Month.AUGUST, 11, 15, 0));
+		ruthCalendar.createAppointment(AppointmentLength.SIXTY, LocalDateTime.of(2023, Month.AUGUST, 12, 11, 0));
+		ruthCalendar.deleteAppointment(LocalDateTime.of(2023, Month.AUGUST, 12, 11, 0));
+		System.out.println(ruthCalendar.getAppointmentList());
+		System.out.println(Sean.compareCalendar(List.of(Ruth), AppointmentLength.SIXTY, 60, LocalDate.of(2023, Month.AUGUST, 10)));
 	}
 }
